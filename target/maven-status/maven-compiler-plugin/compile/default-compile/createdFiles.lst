@@ -18,7 +18,7 @@ br\com\solara\model\vo\RegiaoSustentavel.class
 br\com\solara\model\bo\EmpresaBO.class
 br\com\solara\model\dao\EmpresaDAO.class
 br\com\solara\model\dao\SensorDAO.class
-br\com\solara\conexao\ConexaoFactory.class
+br\com\solara\connection\ConnectionFactory.class
 br\com\solara\model\bo\MedicaoBO.class
 br\com\solara\model\dao\RegiaoSustentavelDAO.class
 br\com\solara\model\vo\ComunidadeProjeto.class
@@ -31,6 +31,7 @@ br\com\solara\model\bo\SensorBO.class
 br\com\solara\exceptions\Exceptions$DatabaseException.class
 br\com\solara\model\bo\ProjetoSustentavelBO.class
 br\com\solara\model\bo\EmissaoCarbonoBO.class
+br\com\solara\resources\LoginResource.class
 br\com\solara\model\bo\ComunidadeBO.class
 br\com\solara\model\vo\Comunidade.class
 br\com\solara\services\EmpresaService.class

@@ -54,7 +54,7 @@ public class EmpresaResource {
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response buscarEmpresaPorId(@PathParam("id") int id) throws ClassNotFoundException, SQLException {
-        Empresa empresa = empresaBO.buscarEmpresaPorId(id);
+        Empresa empresa = empresaBO.buscarEmpresaPorId(id);	
         if (empresa == null) {
             return Response.status(Response.Status.NOT_FOUND)
                     .entity("Empresa não encontrada.")
