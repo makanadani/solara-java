@@ -19,6 +19,7 @@ br\com\solara\model\bo\EmpresaBO.class
 br\com\solara\model\dao\EmpresaDAO.class
 br\com\solara\model\dao\SensorDAO.class
 br\com\solara\connection\ConnectionFactory.class
+br\com\solara\conexao\ConexaoFactory.class
 br\com\solara\model\bo\MedicaoBO.class
 br\com\solara\model\dao\RegiaoSustentavelDAO.class
 br\com\solara\model\vo\ComunidadeProjeto.class

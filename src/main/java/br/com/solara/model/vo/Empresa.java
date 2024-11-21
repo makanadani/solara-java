@@ -9,7 +9,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 public class Empresa {
     private int idEmpresa;
-    private String razaoSocialEmpresa; // Alterado de nomeEmpresa para razaoSocialEmpresa
+    private String razaoSocialEmpresa;
     private String cnpjEmpresa;
     private String senhaEmpresa;
     private String imagemEmpresa;
@@ -20,20 +20,20 @@ public class Empresa {
 
     public Empresa(int idEmpresa, String razaoSocialEmpresa, String cnpjEmpresa) {
         this.idEmpresa = idEmpresa;
-        this.razaoSocialEmpresa = razaoSocialEmpresa; // Ajustado o construtor
+        this.razaoSocialEmpresa = razaoSocialEmpresa;
         this.cnpjEmpresa = cnpjEmpresa;
     }
 
     public Empresa(int idEmpresa, String razaoSocialEmpresa, String cnpjEmpresa, String senhaEmpresa) {
         this.idEmpresa = idEmpresa;
-        this.razaoSocialEmpresa = razaoSocialEmpresa; // Ajustado o construtor
+        this.razaoSocialEmpresa = razaoSocialEmpresa;
         this.cnpjEmpresa = cnpjEmpresa;
         setSenhaEmpresa(senhaEmpresa);
     }
 
     public Empresa(int idEmpresa, String razaoSocialEmpresa, String cnpjEmpresa, String senhaEmpresa, String imagemEmpresa, String descricaoEmpresa) {
         this.idEmpresa = idEmpresa;
-        this.razaoSocialEmpresa = razaoSocialEmpresa; // Ajustado o construtor
+        this.razaoSocialEmpresa = razaoSocialEmpresa;
         this.cnpjEmpresa = cnpjEmpresa;
         setSenhaEmpresa(senhaEmpresa);
         this.imagemEmpresa = imagemEmpresa;
@@ -48,11 +48,11 @@ public class Empresa {
         this.idEmpresa = idEmpresa;
     }
 
-    public String getRazaoSocialEmpresa() { // Ajustado o getter
+    public String getRazaoSocialEmpresa() {
         return razaoSocialEmpresa;
     }
 
-    public void setRazaoSocialEmpresa(String razaoSocialEmpresa) { // Ajustado o setter
+    public void setRazaoSocialEmpresa(String razaoSocialEmpresa) {
         this.razaoSocialEmpresa = razaoSocialEmpresa;
     }
 
@@ -106,7 +106,7 @@ public class Empresa {
     @Override
     public String toString() {
         return "Empresa [idEmpresa=" + idEmpresa +
-                ", razaoSocialEmpresa=" + razaoSocialEmpresa + // Ajustado no toString
+                ", razaoSocialEmpresa=" + razaoSocialEmpresa +
                 ", cnpjEmpresa=" + cnpjEmpresa +
                 ", imagemEmpresa=" + imagemEmpresa +
                 ", descricaoEmpresa=" + descricaoEmpresa + "]";
