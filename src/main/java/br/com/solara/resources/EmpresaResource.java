@@ -1,22 +1,10 @@
 package br.com.solara.resources;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
+import java.util.List;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.core.UriInfo;
-
+import javax.ws.rs.*;
+import javax.ws.rs.core.*;
 import br.com.solara.model.bo.EmpresaBO;
 import br.com.solara.model.vo.Empresa;
 
@@ -48,7 +36,6 @@ public class EmpresaResource {
     // Deletar (DELETE)
     @DELETE
     @Path("/{id}")
-    @Consumes(MediaType.APPLICATION_JSON)
     public Response deletarEmpresa(@PathParam("id") int id) throws ClassNotFoundException, SQLException {
         empresaBO.deletarBO(id);
         return Response.ok().build();
@@ -57,8 +44,9 @@ public class EmpresaResource {
     // Consultar todas (GET)
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public ArrayList<Empresa> listarEmpresas() throws ClassNotFoundException, SQLException {
-        return (ArrayList<Empresa>) empresaBO.selecionarBO();
+    public Response listarEmpresas() throws ClassNotFoundException, SQLException {
+        List<Empresa> empresas = empresaBO.selecionarBO();
+        return Response.ok(empresas).build();
     }
 
     // Consultar por ID (GET)
