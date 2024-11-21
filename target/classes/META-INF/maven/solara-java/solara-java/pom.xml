@@ -20,11 +20,6 @@
 	                        <goal>jar</goal>
 	                    </goals>
 	                    <configuration>
-	                        <archive>
-	                            <manifest>
-	                                <mainClass>br.com.solara.Main</mainClass>
-	                            </manifest>
-	                        </archive>
 	                        <classifier>standalone</classifier>
 	                    </configuration>
 	                </execution>
