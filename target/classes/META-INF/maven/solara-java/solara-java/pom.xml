@@ -5,57 +5,40 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>war</packaging>
 
-    <build>
-        <plugins>
-            <!-- Configuração do Maven Compiler Plugin -->
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
-                <configuration>
-                    <release>17</release>
-                </configuration>
-            </plugin>
+	<build>
+    	<plugins>
+	        <!-- Configuração do JAR -->
+	        <plugin>
+	            <groupId>org.apache.maven.plugins</groupId>
+	            <artifactId>maven-jar-plugin</artifactId>
+	            <version>3.3.0</version>
+	            <executions>
+	                <execution>
+	                    <id>generate-jar</id>
+	                    <phase>package</phase>
+	                    <goals>
+	                        <goal>jar</goal>
+	                    </goals>
+	                    <configuration>
+	                        <archive>
+	                            <manifest>
+	                                <mainClass>br.com.solara.Main</mainClass>
+	                            </manifest>
+	                        </archive>
+	                        <classifier>standalone</classifier>
+	                    </configuration>
+	                </execution>
+	            </executions>
+	        </plugin>
 
-            <!-- Plugin para gerar JAR executável -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>3.3.0</version>
-                <executions>
-                    <execution>
-                        <id>generate-jar</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <configuration>
-                            <archive>
-                                <manifest>
-                                    <mainClass>br.com.solara.Main</mainClass>
-                                </manifest>
-                            </archive>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <!-- Plugin para gerar o WAR -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-war-plugin</artifactId>
-                <version>3.4.0</version>
-                <executions>
-                    <execution>
-                        <id>default-war</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>war</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
+        <!-- Configuração do WAR -->
+	        <plugin>
+	            <groupId>org.apache.maven.plugins</groupId>
+	            <artifactId>maven-war-plugin</artifactId>
+	            <version>3.4.0</version>
+	        </plugin>
+    	</plugins>
+	</build>
 
 	<!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->
 	<dependencies>
