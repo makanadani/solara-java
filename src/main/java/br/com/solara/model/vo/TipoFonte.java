@@ -1,5 +1,6 @@
 package br.com.solara.model.vo;
 
+// Classe referente aos tipos de fontes de energia (TABELA E DADOS FORNECIDOS PELA DISCIPLINA BUILDING RELATIONAL DATABASE)
 public class TipoFonte {
     private int idTipoFonte;
     private String nomeFonte;

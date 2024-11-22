@@ -3,7 +3,7 @@
     
     
     
-    <wb-module deploy-name="projetoTeste-0.0.1-SNAPSHOT">
+    <wb-module deploy-name="solara-java-0.0.1-SNAPSHOT">
                                         
         
         
@@ -28,7 +28,7 @@
         
         
         <property name="java-output-path" value="/solara-java/build/classes"/>
-        <property name="context-root" value="projetoTeste"/>
+        <property name="context-root" value="solara-java"/>
                                     
     
     

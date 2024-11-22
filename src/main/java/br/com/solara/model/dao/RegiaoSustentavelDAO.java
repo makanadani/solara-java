@@ -1,85 +1,100 @@
 package br.com.solara.model.dao;
 
-import br.com.solara.model.vo.RegiaoSustentavel;
-
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import br.com.solara.model.vo.RegiaoSustentavel;
+import br.com.solara.connection.ConnectionFactory;
+
+// Classe para métodos CRUD das regiões sustentáveis
 public class RegiaoSustentavelDAO {
 
-    private final Connection connection;
+    public Connection minhaConexao;
 
-    // Construtor
-    public RegiaoSustentavelDAO(Connection connection) {
-        this.connection = connection;
+    public RegiaoSustentavelDAO() throws ClassNotFoundException, SQLException {
+        this.minhaConexao = new ConnectionFactory().conexao();
     }
 
-    // Create (Inserir uma nova região sustentável)
-    public void inserir(RegiaoSustentavel regiao) throws SQLException {
-        String sql = "INSERT INTO tb_regioes_sustentaveis (nome_regiao) VALUES (?)";
-        try (PreparedStatement stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            stmt.setString(1, regiao.getNomeRegiao());
-            stmt.executeUpdate();
+    // Insert
+    public String inserir(RegiaoSustentavel regiao) throws SQLException {
+        PreparedStatement stmt = minhaConexao.prepareStatement(
+                "INSERT INTO tb_regioes_sustentaveis (nome_regiao) VALUES (?)",
+                PreparedStatement.RETURN_GENERATED_KEYS);
+        
+        stmt.setString(1, regiao.getNomeRegiao());
+        stmt.executeUpdate();
 
-            // Recupera a chave gerada
-            try (ResultSet rs = stmt.getGeneratedKeys()) {
-                if (rs.next()) {
-                    regiao.setIdRegiao(rs.getInt(1));
-                }
-            }
+        ResultSet rs = stmt.getGeneratedKeys();
+        if (rs.next()) {
+            regiao.setIdRegiao(rs.getInt(1));
         }
+
+        stmt.close();
+        return "Região sustentável cadastrada com sucesso!";
     }
 
-    // Read (Buscar uma região sustentável pelo ID)
-    public RegiaoSustentavel buscarPorId(int idRegiao) throws SQLException {
-        String sql = "SELECT id_regiao, nome_regiao FROM tb_regioes_sustentaveis WHERE id_regiao = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, idRegiao);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return new RegiaoSustentavel(
-                        rs.getInt("id_regiao"),
-                        rs.getString("nome_regiao")
-                    );
-                }
-            }
-        }
-        return null; // Retorna null se a região não for encontrada
+    // Delete
+    public String deletar(int idRegiao) throws SQLException {
+        PreparedStatement stmt = minhaConexao.prepareStatement(
+                "DELETE FROM tb_regioes_sustentaveis WHERE id_regiao = ?");
+        
+        stmt.setInt(1, idRegiao);
+        stmt.execute();
+        stmt.close();
+        return "Região sustentável deletada com sucesso!";
     }
 
-    // Read (Listar todas as regiões sustentáveis)
-    public List<RegiaoSustentavel> listarTodas() throws SQLException {
-        List<RegiaoSustentavel> regioes = new ArrayList<>();
-        String sql = "SELECT id_regiao, nome_regiao FROM tb_regioes_sustentaveis";
-        try (PreparedStatement stmt = connection.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
-            while (rs.next()) {
-                regioes.add(new RegiaoSustentavel(
-                    rs.getInt("id_regiao"),
-                    rs.getString("nome_regiao")
-                ));
-            }
-        }
-        return regioes;
+    // Update
+    public String atualizar(RegiaoSustentavel regiao) throws SQLException {
+        PreparedStatement stmt = minhaConexao.prepareStatement(
+                "UPDATE tb_regioes_sustentaveis SET nome_regiao = ? WHERE id_regiao = ?");
+        
+        stmt.setString(1, regiao.getNomeRegiao());
+        stmt.setInt(2, regiao.getIdRegiao());
+        stmt.executeUpdate();
+        stmt.close();
+        return "Região sustentável atualizada com sucesso!";
     }
 
-    // Update (Atualizar dados de uma região sustentável)
-    public void atualizar(RegiaoSustentavel regiao) throws SQLException {
-        String sql = "UPDATE tb_regioes_sustentaveis SET nome_regiao = ? WHERE id_regiao = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, regiao.getNomeRegiao());
-            stmt.setInt(2, regiao.getIdRegiao());
-            stmt.executeUpdate();
+    // Select All
+    public List<RegiaoSustentavel> selecionarTodos() throws SQLException {
+        List<RegiaoSustentavel> listaRegioes = new ArrayList<>();
+        PreparedStatement stmt = minhaConexao.prepareStatement(
+                "SELECT id_regiao, nome_regiao FROM tb_regioes_sustentaveis");
+        
+        ResultSet rs = stmt.executeQuery();
+
+        while (rs.next()) {
+            RegiaoSustentavel regiao = new RegiaoSustentavel();
+            regiao.setIdRegiao(rs.getInt("id_regiao"));
+            regiao.setNomeRegiao(rs.getString("nome_regiao"));
+            listaRegioes.add(regiao);
         }
+
+        stmt.close();
+        return listaRegioes;
     }
 
-    // Delete (Remover uma região sustentável pelo ID)
-    public void deletar(int idRegiao) throws SQLException {
-        String sql = "DELETE FROM tb_regioes_sustentaveis WHERE id_regiao = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, idRegiao);
-            stmt.executeUpdate();
+    // Select
+    public RegiaoSustentavel selecionar(int idRegiao) throws SQLException {
+        RegiaoSustentavel regiao = null;
+        PreparedStatement stmt = minhaConexao.prepareStatement(
+                "SELECT id_regiao, nome_regiao FROM tb_regioes_sustentaveis WHERE id_regiao = ?");
+        
+        stmt.setInt(1, idRegiao);
+        ResultSet rs = stmt.executeQuery();
+
+        if (rs.next()) {
+            regiao = new RegiaoSustentavel();
+            regiao.setIdRegiao(rs.getInt("id_regiao"));
+            regiao.setNomeRegiao(rs.getString("nome_regiao"));
         }
+
+        stmt.close();
+        return regiao;
     }
 }

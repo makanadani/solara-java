@@ -6,6 +6,7 @@ import java.util.Base64;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
+// Classe referente às empresas que administram os microgrids
 @XmlRootElement
 public class Empresa {
     private int idEmpresa;
@@ -15,22 +16,17 @@ public class Empresa {
     private String imagemEmpresa;
     private String descricaoEmpresa;
 
-    public Empresa() {
-    }
+    public Empresa() {}
 
-    public Empresa(int idEmpresa, String razaoSocialEmpresa, String cnpjEmpresa) {
+    // Construtor com ID, razão social, imagem e descrição (CONSUMO DE API PELO FRONT-END)
+    public Empresa(int idEmpresa, String razaoSocialEmpresa, String imagemEmpresa, String descricaoEmpresa) {
         this.idEmpresa = idEmpresa;
         this.razaoSocialEmpresa = razaoSocialEmpresa;
-        this.cnpjEmpresa = cnpjEmpresa;
+        this.imagemEmpresa = imagemEmpresa;
+        this.descricaoEmpresa = descricaoEmpresa;
     }
 
-    public Empresa(int idEmpresa, String razaoSocialEmpresa, String cnpjEmpresa, String senhaEmpresa) {
-        this.idEmpresa = idEmpresa;
-        this.razaoSocialEmpresa = razaoSocialEmpresa;
-        this.cnpjEmpresa = cnpjEmpresa;
-        setSenhaEmpresa(senhaEmpresa);
-    }
-
+    // Construtor completo
     public Empresa(int idEmpresa, String razaoSocialEmpresa, String cnpjEmpresa, String senhaEmpresa, String imagemEmpresa, String descricaoEmpresa) {
         this.idEmpresa = idEmpresa;
         this.razaoSocialEmpresa = razaoSocialEmpresa;
@@ -68,23 +64,12 @@ public class Empresa {
         return senhaEmpresa;
     }
 
-    // Senha criptografada
     public void setSenhaEmpresa(String senha) {
         this.senhaEmpresa = criptografarSenha(senha);
     }
 
     public boolean verificarSenha(String senha) {
         return this.senhaEmpresa.equals(criptografarSenha(senha));
-    }
-
-    private String criptografarSenha(String senha) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(senha.getBytes()); // Calcula o hash com SHA-256
-            return Base64.getEncoder().encodeToString(hash); // Converte para Base64 para facilitar armazenamento
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("Erro ao criptografar senha: " + e.getMessage(), e);
-        }
     }
 
     public String getImagemEmpresa() {
@@ -101,6 +86,17 @@ public class Empresa {
 
     public void setDescricaoEmpresa(String descricaoEmpresa) {
         this.descricaoEmpresa = descricaoEmpresa;
+    }
+
+    // Criptografia da senha
+    private String criptografarSenha(String senha) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(senha.getBytes());
+            return Base64.getEncoder().encodeToString(hash);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("Erro ao criptografar senha: " + e.getMessage(), e);
+        }
     }
 
     @Override

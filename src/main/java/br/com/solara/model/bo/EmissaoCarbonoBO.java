@@ -7,69 +7,101 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
+// Classe de regras de negócio para emissões de carbono
 public class EmissaoCarbonoBO {
 
     private final EmissaoCarbonoDAO emissaoCarbonoDAO;
 
-    // Construtor
     public EmissaoCarbonoBO(Connection connection) {
         this.emissaoCarbonoDAO = new EmissaoCarbonoDAO(connection);
     }
 
-    // Método para inserir uma nova emissão de carbono com validações
-    public void inserirEmissao(EmissaoCarbono emissao) throws Exception {
+    // Inserir
+    public String inserirBO(EmissaoCarbono emissao) throws Exception {
+    	
+        // Regras de negócio:
+        // 1. Valida se os campos obrigatórios estão preenchidos.
         validarCamposObrigatorios(emissao);
+
+        // 2. Garante que o valor da emissão é positivo.
         validarEmissaoPositiva(emissao.getEmissao());
 
-        // Insere a emissão no banco
-        emissaoCarbonoDAO.inserir(emissao);
+        // 3. Insere a emissão no banco.
+        return emissaoCarbonoDAO.inserir(emissao);
     }
 
-    // Método para buscar uma emissão pelo ID
-    public EmissaoCarbono buscarPorId(int idEmissao) throws SQLException {
-        EmissaoCarbono emissao = emissaoCarbonoDAO.buscarPorId(idEmissao);
-        if (emissao == null) {
-            throw new SQLException("Emissão de carbono não encontrada para o ID: " + idEmissao);
-        }
-        return emissao;
-    }
-
-    // Método para listar todas as emissões de carbono
-    public List<EmissaoCarbono> listarTodasEmissoes() throws SQLException {
-        return emissaoCarbonoDAO.listarTodas();
-    }
-
-    // Método para atualizar uma emissão de carbono
-    public void atualizarEmissao(EmissaoCarbono emissao) throws Exception {
+    // Atualizar
+    public String atualizarBO(EmissaoCarbono emissao) throws Exception {
+    	
+        // Regras de negócio:
+        // 1. Valida se os campos obrigatórios estão preenchidos.
         validarCamposObrigatorios(emissao);
+
+        // 2. Garante que o valor da emissão é positivo.
         validarEmissaoPositiva(emissao.getEmissao());
 
-        // Atualiza a emissão no banco
-        emissaoCarbonoDAO.atualizar(emissao);
+        // 3. Atualiza a emissão no banco.
+        return emissaoCarbonoDAO.atualizar(emissao);
     }
 
-    // Método para deletar uma emissão pelo ID
-    public void deletarEmissao(int idEmissao) throws SQLException {
-        EmissaoCarbono emissao = buscarPorId(idEmissao);
+    // Deletar
+    public String deletarBO(int idEmissao) throws SQLException {
+    	
+        // Regras de negócio:
+        // 1. Verifica se a emissão existe antes de excluí-la.
+        EmissaoCarbono emissao = selecionarBO(idEmissao);
         if (emissao == null) {
             throw new SQLException("Emissão de carbono não encontrada para exclusão.");
         }
 
-        emissaoCarbonoDAO.deletar(idEmissao);
+        // 2. Realiza a exclusão da emissão no banco.
+        return emissaoCarbonoDAO.deletar(idEmissao);
     }
 
-    // Método para validar campos obrigatórios
+    // Selecionar por ID
+    public EmissaoCarbono selecionarBO(int idEmissao) throws SQLException {
+    	
+        // Regras de negócio:
+        // 1. Verifica se o ID é válido.
+        if (idEmissao <= 0) {
+            throw new SQLException("O ID da emissão deve ser maior que zero.");
+        }
+
+        // 2. Busca a emissão pelo ID no banco.
+        EmissaoCarbono emissao = emissaoCarbonoDAO.selecionar(idEmissao);
+
+        // 3. Verifica se a emissão foi encontrada.
+        if (emissao == null) {
+            throw new SQLException("Emissão de carbono não encontrada para o ID: " + idEmissao);
+        }
+
+        return emissao;
+    }
+
+    // Selecionar Todas
+    public List<EmissaoCarbono> selecionarTodosBO() throws SQLException {
+        // Retorna a lista de todas as emissões cadastradas no banco.
+        return emissaoCarbonoDAO.selecionarTodos();
+    }
+
+    // Validação de campos obrigatórios
     private void validarCamposObrigatorios(EmissaoCarbono emissao) throws Exception {
+        // Regras de negócio:
+        // 1. O ID do tipo de fonte deve ser maior que zero.
         if (emissao.getIdTipoFonte() <= 0) {
             throw new Exception("O ID do tipo de fonte é obrigatório e deve ser maior que zero.");
         }
+
+        // 2. O valor da emissão não pode ser negativo.
         if (emissao.getEmissao() < 0) {
             throw new Exception("O valor da emissão de carbono não pode ser negativo.");
         }
     }
 
-    // Método para garantir que a emissão seja positiva
+    // Garante que a emissão seja positiva
     private void validarEmissaoPositiva(double emissao) throws Exception {
+        // Regras de negócio:
+        // 1. O valor da emissão deve ser positivo.
         if (emissao <= 0) {
             throw new Exception("A emissão de carbono deve ser um valor positivo.");
         }

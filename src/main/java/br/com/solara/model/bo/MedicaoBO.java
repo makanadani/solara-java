@@ -1,50 +1,81 @@
 package br.com.solara.model.bo;
 
 import br.com.solara.model.dao.MedicaoDAO;
-import br.com.solara.model.dao.SensorDAO;
 import br.com.solara.model.vo.Medicao;
-import br.com.solara.model.vo.Sensor;
 
-import java.sql.Connection;
 import java.sql.SQLException;
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Random;
 
 public class MedicaoBO {
 
     private final MedicaoDAO medicaoDAO;
-    private final SensorDAO sensorDAO;
 
     // Construtor
-    public MedicaoBO(Connection connection) {
-        this.medicaoDAO = new MedicaoDAO(connection);
-        this.sensorDAO = new SensorDAO(connection);
+    public MedicaoBO() throws ClassNotFoundException, SQLException {
+        this.medicaoDAO = new MedicaoDAO();
     }
 
-    // Realizar medições para todos os sensores IoT
-    public void realizarMedicoesAutomatizadas() throws SQLException {
-        List<Sensor> sensores = sensorDAO.listarTodos();
+    // Método para inserir uma nova medição
+    public void inserirBO(Medicao medicao) throws Exception {
+        // Valida campos obrigatórios antes de inserir
+        validarCamposObrigatorios(medicao);
 
-        // Para cada sensor, gera e insere uma medição
-        for (Sensor sensor : sensores) {
-            Medicao medicao = gerarMedicao(sensor);
-            medicaoDAO.inserir(medicao);
+        medicaoDAO.inserir(medicao);
+    }
+
+    // Método para buscar uma medição pelo ID
+    public Medicao selecionarBO(int idMedicao) throws SQLException {
+        if (idMedicao <= 0) {
+            throw new IllegalArgumentException("O ID da medição deve ser maior que zero.");
         }
+
+        Medicao medicao = medicaoDAO.selecionar(idMedicao);
+        if (medicao == null) {
+            throw new SQLException("Medição não encontrada para o ID fornecido.");
+        }
+
+        return medicao;
     }
 
-    // Gerar uma medição para um sensor específico
-    private Medicao gerarMedicao(Sensor sensor) {
-        Random random = new Random();
-        int valorMedicao = random.nextInt(500) + 1;
+    // Método para listar todas as medições
+    public List<Medicao> selecionarTodosBO() throws SQLException {
+        return medicaoDAO.selecionarTodos();
+    }
 
-        return new Medicao(
-                0,
-                sensor.getIdComunidade(),
-                sensor.getIdSensor(),
-                sensor.getTipoSensor(),
-                valorMedicao,
-                LocalDateTime.now()
-        );
+    // Método para atualizar uma medição existente
+    public void atualizarBO(Medicao medicao) throws Exception {
+        if (medicao.getIdMedicao() <= 0) {
+            throw new IllegalArgumentException("O ID da medição para atualização deve ser válido.");
+        }
+
+        validarCamposObrigatorios(medicao);
+        medicaoDAO.atualizar(medicao);
+    }
+
+    // Método para deletar uma medição pelo ID
+    public void deletarBO(int idMedicao) throws SQLException {
+        if (idMedicao <= 0) {
+            throw new IllegalArgumentException("O ID da medição deve ser maior que zero.");
+        }
+
+        medicaoDAO.deletar(idMedicao);
+    }
+
+    // Validação de campos obrigatórios
+    private void validarCamposObrigatorios(Medicao medicao) throws Exception {
+        if (medicao.getIdSensor() <= 0) {
+            throw new Exception("A medição deve estar associada a um sensor válido.");
+        }
+        if (medicao.getTipoMedicao() == null || medicao.getTipoMedicao().trim().isEmpty()) {
+            throw new Exception("O tipo de medição é obrigatório.");
+        }
+        if (!medicao.getTipoMedicao().equalsIgnoreCase("Produção") &&
+            !medicao.getTipoMedicao().equalsIgnoreCase("Armazenamento") &&
+            !medicao.getTipoMedicao().equalsIgnoreCase("Consumo")) {
+            throw new Exception("O tipo de medição deve ser 'Produção', 'Armazenamento' ou 'Consumo'.");
+        }
+        if (medicao.getValorMedicao() <= 0) {
+            throw new Exception("O valor da medição deve ser maior que zero.");
+        }
     }
 }

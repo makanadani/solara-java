@@ -29,18 +29,19 @@ public class LoginResource {
                     .build();
         }
 
+        // Buscar empresa pelo CNPJ
         EmpresaDAO empresaDAO = new EmpresaDAO();
-        Empresa empresa = empresaDAO.buscarPorCnpj(cnpj); // Buscar empresa pelo CNPJ
+        Empresa empresa = empresaDAO.selecionarPorCnpj(cnpj);
 
+        // Verificar se a empresa existe
         if (empresa == null) {
             return Response.status(Response.Status.UNAUTHORIZED)
                     .entity(Map.of("error", "CNPJ não encontrado."))
                     .build();
         }
 
-        // Verificação de senha
+        // Exceção para testes
         if (empresa.getRazaoSocialEmpresa().equalsIgnoreCase("EcoMinds Ltda.")) {
-            // Exceção para senha fixa (apenas para testes)
             if (!senha.equals("ecominds123")) {
                 return Response.status(Response.Status.UNAUTHORIZED)
                         .entity(Map.of("error", "Senha inválida."))
@@ -48,7 +49,7 @@ public class LoginResource {
             }
         } else {
             // Verificação de senha criptografada para outras empresas
-            String senhaHash = gerarHashSHA256(senha); // Gera o hash SHA-256 da senha
+            String senhaHash = gerarHashSHA256(senha);
             if (!empresa.getSenhaEmpresa().equals(senhaHash)) {
                 return Response.status(Response.Status.UNAUTHORIZED)
                         .entity(Map.of("error", "Senha inválida."))

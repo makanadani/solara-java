@@ -1,5 +1,6 @@
 package br.com.solara.model.vo;
 
+// Classe referente às regiões sustentáveis (TABELA E DADOS FORNECIDOS PELA DISCIPLINA BUILDING RELATIONAL DATABASE)
 public class RegiaoSustentavel {
     private int idRegiao;
     private String nomeRegiao;

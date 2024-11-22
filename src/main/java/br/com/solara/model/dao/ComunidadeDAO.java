@@ -1,112 +1,128 @@
 package br.com.solara.model.dao;
 
-import br.com.solara.model.vo.Comunidade;
-
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import br.com.solara.connection.ConnectionFactory;
+import br.com.solara.model.vo.Comunidade;
+
+// Classe para métodos CRUD das comunidades
 public class ComunidadeDAO {
 
-    private final Connection connection;
+    public Connection minhaConexao;
 
-    // Construtor
-    public ComunidadeDAO(Connection connection) {
-        this.connection = connection;
+    public ComunidadeDAO() throws ClassNotFoundException, SQLException {
+        this.minhaConexao = new ConnectionFactory().conexao();
     }
 
-    // Create (Inserir uma nova comunidade)
-    public void inserir(Comunidade comunidade) throws SQLException {
-        String sql = "INSERT INTO tb_comunidades (id_empresa, id_regiao, protocolo_atendimento_comunidade, " +
-                     "nome_comunidade, latitude_comunidade, longitude_comunidade) VALUES (?, ?, ?, ?, ?, ?)";
-        try (PreparedStatement stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            stmt.setInt(1, comunidade.getIdEmpresa());
-            stmt.setInt(2, comunidade.getIdRegiao());
-            stmt.setObject(3, comunidade.getProtocoloAtendimentoComunidade(), Types.INTEGER);
-            stmt.setString(4, comunidade.getNomeComunidade());
-            stmt.setDouble(5, comunidade.getLatitudeComunidade());
-            stmt.setDouble(6, comunidade.getLongitudeComunidade());
-            stmt.executeUpdate();
+    // Insert
+    public String inserir(Comunidade comunidade) throws SQLException {
+        PreparedStatement stmt = minhaConexao.prepareStatement(
+                "INSERT INTO tb_comunidades (id_empresa, id_regiao, protocolo_atendimento_comunidade, " +
+                        "nome_comunidade, latitude_comunidade, longitude_comunidade) VALUES (?, ?, ?, ?, ?, ?)",
+                PreparedStatement.RETURN_GENERATED_KEYS);
 
-            // Recupera a chave gerada
-            try (ResultSet rs = stmt.getGeneratedKeys()) {
-                if (rs.next()) {
-                    comunidade.setIdComunidade(rs.getInt(1));
-                }
-            }
+        stmt.setInt(1, comunidade.getIdEmpresa());
+        stmt.setInt(2, comunidade.getIdRegiao());
+        stmt.setObject(3, comunidade.getProtocoloAtendimentoComunidade(), java.sql.Types.INTEGER);
+        stmt.setString(4, comunidade.getNomeComunidade());
+        stmt.setDouble(5, comunidade.getLatitudeComunidade());
+        stmt.setDouble(6, comunidade.getLongitudeComunidade());
+        stmt.executeUpdate();
+
+        ResultSet rs = stmt.getGeneratedKeys();
+        if (rs.next()) {
+            comunidade.setIdComunidade(rs.getInt(1));
         }
+
+        stmt.close();
+        return "Comunidade cadastrada com sucesso!";
     }
 
-    // Read (Buscar uma comunidade pelo ID)
-    public Comunidade buscarPorId(int idComunidade) throws SQLException {
-        String sql = "SELECT id_comunidade, id_empresa, id_regiao, protocolo_atendimento_comunidade, " +
-                     "nome_comunidade, latitude_comunidade, longitude_comunidade " +
-                     "FROM tb_comunidades WHERE id_comunidade = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, idComunidade);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return new Comunidade(
-                        rs.getInt("id_comunidade"),
-                        rs.getInt("id_empresa"),
-                        rs.getInt("id_regiao"),
-                        rs.getObject("protocolo_atendimento_comunidade") != null ?
-                                rs.getInt("protocolo_atendimento_comunidade") : null,
-                        rs.getString("nome_comunidade"),
-                        rs.getDouble("latitude_comunidade"),
-                        rs.getDouble("longitude_comunidade")
-                    );
-                }
-            }
-        }
-        return null;
+    // Delete
+    public String deletar(int idComunidade) throws SQLException {
+        PreparedStatement stmt = minhaConexao.prepareStatement(
+                "DELETE FROM tb_comunidades WHERE id_comunidade = ?");
+        stmt.setInt(1, idComunidade);
+        stmt.execute();
+        stmt.close();
+        return "Comunidade deletada com sucesso!";
     }
 
-    // Read (Listar todas as comunidades)
-    public List<Comunidade> listarTodas() throws SQLException {
-        List<Comunidade> comunidades = new ArrayList<>();
-        String sql = "SELECT id_comunidade, id_empresa, id_regiao, protocolo_atendimento_comunidade, " +
-                     "nome_comunidade, latitude_comunidade, longitude_comunidade FROM tb_comunidades";
-        try (PreparedStatement stmt = connection.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
-            while (rs.next()) {
-                comunidades.add(new Comunidade(
-                    rs.getInt("id_comunidade"),
-                    rs.getInt("id_empresa"),
-                    rs.getInt("id_regiao"),
+    // Update
+    public String atualizar(Comunidade comunidade) throws SQLException {
+        PreparedStatement stmt = minhaConexao.prepareStatement(
+                "UPDATE tb_comunidades SET id_empresa = ?, id_regiao = ?, protocolo_atendimento_comunidade = ?, " +
+                        "nome_comunidade = ?, latitude_comunidade = ?, longitude_comunidade = ? WHERE id_comunidade = ?");
+
+        stmt.setInt(1, comunidade.getIdEmpresa());
+        stmt.setInt(2, comunidade.getIdRegiao());
+        stmt.setObject(3, comunidade.getProtocoloAtendimentoComunidade(), java.sql.Types.INTEGER);
+        stmt.setString(4, comunidade.getNomeComunidade());
+        stmt.setDouble(5, comunidade.getLatitudeComunidade());
+        stmt.setDouble(6, comunidade.getLongitudeComunidade());
+        stmt.setInt(7, comunidade.getIdComunidade());
+        stmt.executeUpdate();
+        stmt.close();
+        return "Comunidade atualizada com sucesso!";
+    }
+
+    // Select All
+    public List<Comunidade> selecionarTodos() throws SQLException {
+        List<Comunidade> listaComunidades = new ArrayList<>();
+        PreparedStatement stmt = minhaConexao.prepareStatement(
+                "SELECT id_comunidade, id_empresa, id_regiao, protocolo_atendimento_comunidade, " +
+                        "nome_comunidade, latitude_comunidade, longitude_comunidade FROM tb_comunidades");
+
+        ResultSet rs = stmt.executeQuery();
+
+        while (rs.next()) {
+            Comunidade comunidade = new Comunidade();
+            comunidade.setIdComunidade(rs.getInt("id_comunidade"));
+            comunidade.setIdEmpresa(rs.getInt("id_empresa"));
+            comunidade.setIdRegiao(rs.getInt("id_regiao"));
+            comunidade.setProtocoloAtendimentoComunidade(
                     rs.getObject("protocolo_atendimento_comunidade") != null ?
-                            rs.getInt("protocolo_atendimento_comunidade") : null,
-                    rs.getString("nome_comunidade"),
-                    rs.getDouble("latitude_comunidade"),
-                    rs.getDouble("longitude_comunidade")
-                ));
-            }
+                            rs.getInt("protocolo_atendimento_comunidade") : null);
+            comunidade.setNomeComunidade(rs.getString("nome_comunidade"));
+            comunidade.setLatitudeComunidade(rs.getDouble("latitude_comunidade"));
+            comunidade.setLongitudeComunidade(rs.getDouble("longitude_comunidade"));
+            listaComunidades.add(comunidade);
         }
-        return comunidades;
+
+        stmt.close();
+        return listaComunidades;
     }
 
-    // Update (Atualizar dados de uma comunidade)
-    public void atualizar(Comunidade comunidade) throws SQLException {
-        String sql = "UPDATE tb_comunidades SET id_empresa = ?, id_regiao = ?, protocolo_atendimento_comunidade = ?, " +
-                     "nome_comunidade = ?, latitude_comunidade = ?, longitude_comunidade = ? WHERE id_comunidade = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, comunidade.getIdEmpresa());
-            stmt.setInt(2, comunidade.getIdRegiao());
-            stmt.setObject(3, comunidade.getProtocoloAtendimentoComunidade(), Types.INTEGER);
-            stmt.setString(4, comunidade.getNomeComunidade());
-            stmt.setDouble(5, comunidade.getLatitudeComunidade());
-            stmt.setDouble(6, comunidade.getLongitudeComunidade());
-            stmt.setInt(7, comunidade.getIdComunidade());
-            stmt.executeUpdate();
-        }
-    }
+    // Select
+    public Comunidade selecionar(int idComunidade) throws SQLException {
+        Comunidade comunidade = null;
+        PreparedStatement stmt = minhaConexao.prepareStatement(
+                "SELECT id_comunidade, id_empresa, id_regiao, protocolo_atendimento_comunidade, " +
+                        "nome_comunidade, latitude_comunidade, longitude_comunidade " +
+                        "FROM tb_comunidades WHERE id_comunidade = ?");
+        stmt.setInt(1, idComunidade);
 
-    // Delete (Remover uma comunidade pelo ID)
-    public void deletar(int idComunidade) throws SQLException {
-        String sql = "DELETE FROM tb_comunidades WHERE id_comunidade = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, idComunidade);
-            stmt.executeUpdate();
+        ResultSet rs = stmt.executeQuery();
+
+        if (rs.next()) {
+            comunidade = new Comunidade();
+            comunidade.setIdComunidade(rs.getInt("id_comunidade"));
+            comunidade.setIdEmpresa(rs.getInt("id_empresa"));
+            comunidade.setIdRegiao(rs.getInt("id_regiao"));
+            comunidade.setProtocoloAtendimentoComunidade(
+                    rs.getObject("protocolo_atendimento_comunidade") != null ?
+                            rs.getInt("protocolo_atendimento_comunidade") : null);
+            comunidade.setNomeComunidade(rs.getString("nome_comunidade"));
+            comunidade.setLatitudeComunidade(rs.getDouble("latitude_comunidade"));
+            comunidade.setLongitudeComunidade(rs.getDouble("longitude_comunidade"));
         }
+
+        stmt.close();
+        return comunidade;
     }
 }

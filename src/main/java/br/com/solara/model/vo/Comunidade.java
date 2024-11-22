@@ -1,5 +1,6 @@
 package br.com.solara.model.vo;
 
+// Classe referente às comunidades beneficiadas pelos microgrids
 public class Comunidade {
     private int idComunidade;
     private int idEmpresa;

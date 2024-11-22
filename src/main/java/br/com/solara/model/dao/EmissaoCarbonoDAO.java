@@ -6,84 +6,86 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+// Classe para métodos CRUD das emissões de carbono
 public class EmissaoCarbonoDAO {
 
-    private final Connection connection;
+    private final Connection minhaConexao;
 
-    // Construtor
     public EmissaoCarbonoDAO(Connection connection) {
-        this.connection = connection;
+        this.minhaConexao = connection;
     }
 
-    // Create (Inserir uma nova emissão de carbono)
-    public void inserir(EmissaoCarbono emissaoCarbono) throws SQLException {
+    // Insert
+    public String inserir(EmissaoCarbono emissao) throws SQLException {
         String sql = "INSERT INTO tb_emissoes_carbono (id_tipo_fonte, emissao) VALUES (?, ?)";
-        try (PreparedStatement stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            stmt.setInt(1, emissaoCarbono.getIdTipoFonte());
-            stmt.setDouble(2, emissaoCarbono.getEmissao());
+        try (PreparedStatement stmt = minhaConexao.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
+            stmt.setInt(1, emissao.getIdTipoFonte());
+            stmt.setDouble(2, emissao.getEmissao());
             stmt.executeUpdate();
 
-            // Recupera a chave gerada
             try (ResultSet rs = stmt.getGeneratedKeys()) {
                 if (rs.next()) {
-                    emissaoCarbono.setIdEmissao(rs.getInt(1));
+                    emissao.setIdEmissao(rs.getInt(1));
                 }
             }
         }
+        return "Emissão de carbono cadastrada com sucesso!";
     }
 
-    // Read (Buscar uma emissão pelo ID)
-    public EmissaoCarbono buscarPorId(int idEmissao) throws SQLException {
+    // Update
+    public String atualizar(EmissaoCarbono emissao) throws SQLException {
+        String sql = "UPDATE tb_emissoes_carbono SET id_tipo_fonte = ?, emissao = ? WHERE id_emissao = ?";
+        try (PreparedStatement stmt = minhaConexao.prepareStatement(sql)) {
+            stmt.setInt(1, emissao.getIdTipoFonte());
+            stmt.setDouble(2, emissao.getEmissao());
+            stmt.setInt(3, emissao.getIdEmissao());
+            stmt.executeUpdate();
+        }
+        return "Emissão de carbono atualizada com sucesso!";
+    }
+
+    // Delete
+    public String deletar(int idEmissao) throws SQLException {
+        String sql = "DELETE FROM tb_emissoes_carbono WHERE id_emissao = ?";
+        try (PreparedStatement stmt = minhaConexao.prepareStatement(sql)) {
+            stmt.setInt(1, idEmissao);
+            stmt.executeUpdate();
+        }
+        return "Emissão de carbono deletada com sucesso!";
+    }
+
+    // Select
+    public EmissaoCarbono selecionar(int idEmissao) throws SQLException {
         String sql = "SELECT id_emissao, id_tipo_fonte, emissao FROM tb_emissoes_carbono WHERE id_emissao = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+        EmissaoCarbono emissao = null;
+        try (PreparedStatement stmt = minhaConexao.prepareStatement(sql)) {
             stmt.setInt(1, idEmissao);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    return new EmissaoCarbono(
-                        rs.getInt("id_emissao"),
-                        rs.getInt("id_tipo_fonte"),
-                        rs.getDouble("emissao")
-                    );
+                    emissao = new EmissaoCarbono();
+                    emissao.setIdEmissao(rs.getInt("id_emissao"));
+                    emissao.setIdTipoFonte(rs.getInt("id_tipo_fonte"));
+                    emissao.setEmissao(rs.getDouble("emissao"));
                 }
             }
         }
-        return null; // Retorna null se a emissão não for encontrada
+        return emissao;
     }
 
-    // Read (Listar todas as emissões de carbono)
-    public List<EmissaoCarbono> listarTodas() throws SQLException {
+    // Select All
+    public List<EmissaoCarbono> selecionarTodos() throws SQLException {
         List<EmissaoCarbono> emissoes = new ArrayList<>();
         String sql = "SELECT id_emissao, id_tipo_fonte, emissao FROM tb_emissoes_carbono";
-        try (PreparedStatement stmt = connection.prepareStatement(sql);
+        try (PreparedStatement stmt = minhaConexao.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
-                emissoes.add(new EmissaoCarbono(
-                    rs.getInt("id_emissao"),
-                    rs.getInt("id_tipo_fonte"),
-                    rs.getDouble("emissao")
-                ));
+                EmissaoCarbono emissao = new EmissaoCarbono();
+                emissao.setIdEmissao(rs.getInt("id_emissao"));
+                emissao.setIdTipoFonte(rs.getInt("id_tipo_fonte"));
+                emissao.setEmissao(rs.getDouble("emissao"));
+                emissoes.add(emissao);
             }
         }
         return emissoes;
-    }
-
-    // Update (Atualizar dados de uma emissão de carbono)
-    public void atualizar(EmissaoCarbono emissaoCarbono) throws SQLException {
-        String sql = "UPDATE tb_emissoes_carbono SET id_tipo_fonte = ?, emissao = ? WHERE id_emissao = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, emissaoCarbono.getIdTipoFonte());
-            stmt.setDouble(2, emissaoCarbono.getEmissao());
-            stmt.setInt(3, emissaoCarbono.getIdEmissao());
-            stmt.executeUpdate();
-        }
-    }
-
-    // Delete (Remover uma emissão pelo ID)
-    public void deletar(int idEmissao) throws SQLException {
-        String sql = "DELETE FROM tb_emissoes_carbono WHERE id_emissao = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, idEmissao);
-            stmt.executeUpdate();
-        }
     }
 }

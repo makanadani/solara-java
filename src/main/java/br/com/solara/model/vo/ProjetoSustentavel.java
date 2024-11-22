@@ -1,5 +1,6 @@
 package br.com.solara.model.vo;
 
+// Classe referente aos projetos sustentáveis (TABELA E DADOS FORNECIDOS PELA DISCIPLINA BUILDING RELATIONAL DATABASE)
 public class ProjetoSustentavel {
     private int idProjeto;
     private Integer idTipoFonte;

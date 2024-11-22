@@ -1,5 +1,6 @@
 package br.com.solara.model.vo;
 
+// Classe referente às emissões de carbono (TABELA E DADOS FORNECIDOS PELA DISCIPLINA BUILDING RELATIONAL DATABASE)
 public class EmissaoCarbono {
     private int idEmissao;
     private int idTipoFonte;
@@ -14,7 +15,6 @@ public class EmissaoCarbono {
         this.emissao = emissao;
     }
 
-    // Getters e Setters
     public int getIdEmissao() {
         return idEmissao;
     }

@@ -2,25 +2,24 @@ package br.com.solara.model.vo;
 
 import java.time.LocalDateTime;
 
+// Classe referente às medições realizadas pelos sensores IoT de produção, armazenamento e consumo de energia
 public class Medicao {
+
     private int idMedicao;
-    private int idComunidade;
     private int idSensor;
     private String tipoMedicao;
-    private int valorMedicao;
+    private Integer valorMedicao;
     private LocalDateTime dataHoraMedicao;
 
     public Medicao() {
     }
 
-    public Medicao(int idMedicao, int idComunidade, int idSensor, 
-    		String tipoMedicao, int valorMedicao, LocalDateTime dataHoraMedicao) {
+    public Medicao(int idMedicao, int idSensor, String tipoMedicao, int valorMedicao, LocalDateTime dataHoraMedicao) {
         this.idMedicao = idMedicao;
-        this.idComunidade = idComunidade;
-        this.idSensor = idSensor;
-        this.tipoMedicao = tipoMedicao;
-        this.valorMedicao = valorMedicao;
-        this.dataHoraMedicao = dataHoraMedicao;
+        this.setIdSensor(idSensor);
+        this.setTipoMedicao(tipoMedicao);
+        this.setValorMedicao(valorMedicao);
+        this.setDataHoraMedicao(dataHoraMedicao);
     }
 
     public int getIdMedicao() {
@@ -31,19 +30,14 @@ public class Medicao {
         this.idMedicao = idMedicao;
     }
 
-    public int getIdComunidade() {
-        return idComunidade;
-    }
-
-    public void setIdComunidade(int idComunidade) {
-        this.idComunidade = idComunidade;
-    }
-
     public int getIdSensor() {
         return idSensor;
     }
 
     public void setIdSensor(int idSensor) {
+        if (idSensor <= 0) {
+            throw new IllegalArgumentException("O ID do sensor deve ser maior que zero.");
+        }
         this.idSensor = idSensor;
     }
 
@@ -52,6 +46,12 @@ public class Medicao {
     }
 
     public void setTipoMedicao(String tipoMedicao) {
+        if (tipoMedicao == null || tipoMedicao.trim().isEmpty()) {
+            throw new IllegalArgumentException("O tipo de medição não pode estar vazio.");
+        }
+        if (!tipoMedicao.equals("Produção") && !tipoMedicao.equals("Armazenamento") && !tipoMedicao.equals("Consumo")) {
+            throw new IllegalArgumentException("O tipo de medição deve ser 'Produção', 'Armazenamento' ou 'Consumo'.");
+        }
         this.tipoMedicao = tipoMedicao;
     }
 
@@ -59,7 +59,10 @@ public class Medicao {
         return valorMedicao;
     }
 
-    public void setValorMedicao(int valorMedicao) {
+    public void setValorMedicao(Integer valorMedicao) {
+        if (valorMedicao < 0) {
+            throw new IllegalArgumentException("O valor da medição não pode ser negativo.");
+        }
         this.valorMedicao = valorMedicao;
     }
 
@@ -68,6 +71,9 @@ public class Medicao {
     }
 
     public void setDataHoraMedicao(LocalDateTime dataHoraMedicao) {
+        if (dataHoraMedicao == null) {
+            throw new IllegalArgumentException("A data e hora da medição não podem ser nulas.");
+        }
         this.dataHoraMedicao = dataHoraMedicao;
     }
 
@@ -75,7 +81,6 @@ public class Medicao {
     public String toString() {
         return "Medicao{" +
                 "idMedicao=" + idMedicao +
-                ", idComunidade=" + idComunidade +
                 ", idSensor=" + idSensor +
                 ", tipoMedicao='" + tipoMedicao + '\'' +
                 ", valorMedicao=" + valorMedicao +

@@ -3,8 +3,8 @@ package br.com.solara.model.bo;
 import br.com.solara.model.dao.ComunidadeDAO;
 import br.com.solara.model.vo.Comunidade;
 
-import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ComunidadeBO {
@@ -12,75 +12,98 @@ public class ComunidadeBO {
     private final ComunidadeDAO comunidadeDAO;
 
     // Construtor
-    public ComunidadeBO(Connection connection) {
-        this.comunidadeDAO = new ComunidadeDAO(connection);
+    public ComunidadeBO() throws ClassNotFoundException, SQLException {
+        this.comunidadeDAO = new ComunidadeDAO();
     }
 
-    // Método para inserir uma nova comunidade com validações
-    public void inserirComunidade(Comunidade comunidade) throws Exception {
+    // Inserir
+    public void inserirBO(Comunidade comunidade) throws Exception {
+        // Regras de negócio:
+        // 1. Valida se os campos obrigatórios estão preenchidos.
         validarCamposObrigatorios(comunidade);
+
+        // 2. Valida a localização da comunidade.
         validarLocalizacao(comunidade.getLatitudeComunidade(), comunidade.getLongitudeComunidade());
 
-        // Verifica se já existe uma comunidade com o mesmo nome
+        // 3. Verifica se já existe uma comunidade com o mesmo nome.
         if (isNomeComunidadeDuplicado(comunidade.getNomeComunidade())) {
             throw new Exception("Já existe uma comunidade com este nome.");
         }
 
-        // Insere no banco
+        // 4. Insere a comunidade no banco de dados.
         comunidadeDAO.inserir(comunidade);
     }
 
-    // Método para buscar uma comunidade pelo ID
-    public Comunidade buscarComunidadePorId(int idComunidade) throws SQLException {
-        Comunidade comunidade = comunidadeDAO.buscarPorId(idComunidade);
-        if (comunidade == null) {
-            throw new SQLException("Comunidade não encontrada para o ID: " + idComunidade);
-        }
-        return comunidade;
-    }
-
-    // Método para listar todas as comunidades
-    public List<Comunidade> listarTodasComunidades() throws SQLException {
-        return comunidadeDAO.listarTodas();
-    }
-
-    // Método para atualizar uma comunidade
-    public void atualizarComunidade(Comunidade comunidade) throws Exception {
+    // Atualizar
+    public void atualizarBO(Comunidade comunidade) throws Exception {
+        // Regras de negócio:
+        // 1. Valida se os campos obrigatórios estão preenchidos.
         validarCamposObrigatorios(comunidade);
+
+        // 2. Valida a localização da comunidade.
         validarLocalizacao(comunidade.getLatitudeComunidade(), comunidade.getLongitudeComunidade());
 
-        // Atualiza no banco
+        // 3. Atualiza a comunidade no banco de dados.
         comunidadeDAO.atualizar(comunidade);
     }
 
-    // Método para deletar uma comunidade pelo ID
-    public void deletarComunidade(int idComunidade) throws SQLException {
-        Comunidade comunidade = buscarComunidadePorId(idComunidade);
+    // Deletar
+    public void deletarBO(int idComunidade) throws SQLException {
+        // Regras de negócio:
+        // 1. Verifica se a comunidade existe antes de excluí-la.
+        Comunidade comunidade = selecionarBO(idComunidade);
         if (comunidade == null) {
             throw new SQLException("Comunidade não encontrada para exclusão.");
         }
 
+        // 2. Realiza a exclusão da comunidade no banco de dados.
         comunidadeDAO.deletar(idComunidade);
     }
 
-    // Valida os campos obrigatórios
+    // Selecionar Todos
+    public ArrayList<Comunidade> selecionarTodosBO() throws SQLException {
+        return (ArrayList<Comunidade>) comunidadeDAO.selecionarTodos();
+    }
+
+    // Selecionar por ID
+    public Comunidade selecionarBO(int idComunidade) throws SQLException {
+        Comunidade comunidade = comunidadeDAO.selecionar(idComunidade);
+
+        // Regras de negócio:
+        // 1. Verifica se a comunidade foi encontrada.
+        if (comunidade == null) {
+            throw new SQLException("Comunidade não encontrada para o ID fornecido.");
+        }
+
+        return comunidade;
+    }
+
+    // Validação de campos obrigatórios
     private void validarCamposObrigatorios(Comunidade comunidade) throws Exception {
+        // 1. O nome da comunidade é obrigatório.
         if (comunidade.getNomeComunidade() == null || comunidade.getNomeComunidade().trim().isEmpty()) {
             throw new Exception("O nome da comunidade é obrigatório.");
         }
+
+        // 2. A comunidade deve estar associada a uma empresa válida.
         if (comunidade.getIdEmpresa() <= 0) {
             throw new Exception("A comunidade deve estar associada a uma empresa válida.");
         }
+
+        // 3. A comunidade deve estar associada a uma região válida.
         if (comunidade.getIdRegiao() <= 0) {
             throw new Exception("A comunidade deve estar associada a uma região válida.");
         }
     }
 
-    // Valida se a localização está dentro de limites razoáveis
+    // Validação da localização
     private void validarLocalizacao(double latitude, double longitude) throws Exception {
+        // 1. A latitude deve estar entre -90 e 90 graus.
         if (latitude < -90 || latitude > 90) {
             throw new Exception("A latitude deve estar entre -90 e 90 graus.");
         }
+
+        // 2. A longitude deve estar entre -180 e 180 graus.
         if (longitude < -180 || longitude > 180) {
             throw new Exception("A longitude deve estar entre -180 e 180 graus.");
         }
@@ -88,7 +111,8 @@ public class ComunidadeBO {
 
     // Verifica se já existe uma comunidade com o mesmo nome
     private boolean isNomeComunidadeDuplicado(String nomeComunidade) throws SQLException {
-        List<Comunidade> comunidades = comunidadeDAO.listarTodas();
+        // Busca todas as comunidades e verifica duplicidade no nome.
+        List<Comunidade> comunidades = comunidadeDAO.selecionarTodos();
         return comunidades.stream().anyMatch(c -> c.getNomeComunidade().equalsIgnoreCase(nomeComunidade));
     }
 }

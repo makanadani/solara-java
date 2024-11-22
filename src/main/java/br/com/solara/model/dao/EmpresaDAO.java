@@ -10,119 +10,123 @@ import java.util.List;
 import br.com.solara.connection.ConnectionFactory;
 import br.com.solara.model.vo.Empresa;
 
+// Classe para métodos CRUD das empresas que gerenciam microgrids
 public class EmpresaDAO {
 
-    private Connection conexao;
+    private Connection minhaConexao;
 
-    // Construtor
     public EmpresaDAO() throws ClassNotFoundException, SQLException {
-        new ConnectionFactory();
-		this.conexao = ConnectionFactory.conexao();
+        this.minhaConexao = new ConnectionFactory().conexao();
     }
 
-    // Inserir (Create)
+    // Insert
     public String inserir(Empresa empresa) throws SQLException {
-        String sql = "INSERT INTO tb_empresas (razao_social_empresa, cnpj_empresa, senha_empresa, imagem_empresa, descricao_empresa) VALUES (?, ?, ?, ?, ?)";
-        try (PreparedStatement stmt = conexao.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
-            stmt.setString(1, empresa.getRazaoSocialEmpresa());
-            stmt.setString(2, empresa.getCnpjEmpresa());
-            stmt.setString(3, empresa.getSenhaEmpresa());
-            stmt.setString(4, empresa.getImagemEmpresa());
-            stmt.setString(5, empresa.getDescricaoEmpresa());
-            stmt.executeUpdate();
+        PreparedStatement stmt = minhaConexao.prepareStatement(
+                "INSERT INTO tb_empresas (razao_social_empresa, cnpj_empresa, senha_empresa, imagem_empresa, descricao_empresa) VALUES (?, ?, ?, ?, ?)",
+                PreparedStatement.RETURN_GENERATED_KEYS);
+        stmt.setString(1, empresa.getRazaoSocialEmpresa());
+        stmt.setString(2, empresa.getCnpjEmpresa());
+        stmt.setString(3, empresa.getSenhaEmpresa());
+        stmt.setString(4, empresa.getImagemEmpresa());
+        stmt.setString(5, empresa.getDescricaoEmpresa());
+        stmt.executeUpdate();
 
-            // Recupera o ID gerado
-            try (ResultSet rs = stmt.getGeneratedKeys()) {
-                if (rs.next()) {
-                    empresa.setIdEmpresa(rs.getInt(1));
-                }
-            }
+        ResultSet rs = stmt.getGeneratedKeys();
+        if (rs.next()) {
+            empresa.setIdEmpresa(rs.getInt(1));
         }
-        return "Empresa cadastrada com sucesso!";
+
+        stmt.close();
+        return "Cadastrado com sucesso!";
     }
 
-    // Atualizar (Update)
+    // Update
     public String atualizar(Empresa empresa) throws SQLException {
-        String sql = "UPDATE tb_empresas SET razao_social_empresa = ?, cnpj_empresa = ?, senha_empresa = ?, imagem_empresa = ?, descricao_empresa = ? WHERE id_empresa = ?";
-        try (PreparedStatement stmt = conexao.prepareStatement(sql)) {
-            stmt.setString(1, empresa.getRazaoSocialEmpresa());
-            stmt.setString(2, empresa.getCnpjEmpresa());
-            stmt.setString(3, empresa.getSenhaEmpresa());
-            stmt.setString(4, empresa.getImagemEmpresa());
-            stmt.setString(5, empresa.getDescricaoEmpresa());
-            stmt.setInt(6, empresa.getIdEmpresa());
-            stmt.executeUpdate();
-        }
-        return "Empresa atualizada com sucesso!";
+        PreparedStatement stmt = minhaConexao.prepareStatement(
+                "UPDATE tb_empresas SET razao_social_empresa = ?, cnpj_empresa = ?, senha_empresa = ?, imagem_empresa = ?, descricao_empresa = ? WHERE id_empresa = ?");
+        stmt.setString(1, empresa.getRazaoSocialEmpresa());
+        stmt.setString(2, empresa.getCnpjEmpresa());
+        stmt.setString(3, empresa.getSenhaEmpresa());
+        stmt.setString(4, empresa.getImagemEmpresa());
+        stmt.setString(5, empresa.getDescricaoEmpresa());
+        stmt.setInt(6, empresa.getIdEmpresa());
+        stmt.executeUpdate();
+        stmt.close();
+        return "Atualizado com sucesso!";
     }
 
-    // Deletar (Delete)
+    // Delete
     public String deletar(int idEmpresa) throws SQLException {
-        String sql = "DELETE FROM tb_empresas WHERE id_empresa = ?";
-        try (PreparedStatement stmt = conexao.prepareStatement(sql)) {
-            stmt.setInt(1, idEmpresa);
-            stmt.executeUpdate();
-        }
-        return "Empresa deletada com sucesso!";
+        PreparedStatement stmt = minhaConexao.prepareStatement("DELETE FROM tb_empresas WHERE id_empresa = ?");
+        stmt.setInt(1, idEmpresa);
+        stmt.executeUpdate();
+        stmt.close();
+        return "Deletado com sucesso!";
     }
 
-    // Consultar todas (Select All)
-    public List<Empresa> selecionar() throws SQLException {
+    // Select All
+    public List<Empresa> selecionarTodos() throws SQLException {
         List<Empresa> listaEmpresas = new ArrayList<>();
-        String sql = "SELECT id_empresa, razao_social_empresa, cnpj_empresa, senha_empresa, imagem_empresa, descricao_empresa FROM tb_empresas";
-        try (PreparedStatement stmt = conexao.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
-            while (rs.next()) {
-                Empresa empresa = new Empresa();
-                empresa.setIdEmpresa(rs.getInt("id_empresa"));
-                empresa.setRazaoSocialEmpresa(rs.getString("razao_social_empresa"));
-                empresa.setCnpjEmpresa(rs.getString("cnpj_empresa"));
-                empresa.setSenhaEmpresa(rs.getString("senha_empresa"));
-                empresa.setImagemEmpresa(rs.getString("imagem_empresa"));
-                empresa.setDescricaoEmpresa(rs.getString("descricao_empresa"));
-                listaEmpresas.add(empresa);
-            }
+        PreparedStatement stmt = minhaConexao.prepareStatement(
+                "SELECT id_empresa, razao_social_empresa, cnpj_empresa, senha_empresa, imagem_empresa, descricao_empresa FROM tb_empresas");
+
+        ResultSet rs = stmt.executeQuery();
+        while (rs.next()) {
+            Empresa empresa = new Empresa();
+            empresa.setIdEmpresa(rs.getInt("id_empresa"));
+            empresa.setRazaoSocialEmpresa(rs.getString("razao_social_empresa"));
+            empresa.setCnpjEmpresa(rs.getString("cnpj_empresa"));
+            empresa.setSenhaEmpresa(rs.getString("senha_empresa"));
+            empresa.setImagemEmpresa(rs.getString("imagem_empresa"));
+            empresa.setDescricaoEmpresa(rs.getString("descricao_empresa"));
+            listaEmpresas.add(empresa);
         }
+
+        stmt.close();
         return listaEmpresas;
     }
 
-    // Consultar por ID (Select by ID)
-    public Empresa buscarPorId(int idEmpresa) throws SQLException {
-        String sql = "SELECT id_empresa, razao_social_empresa, cnpj_empresa, senha_empresa, imagem_empresa, descricao_empresa FROM tb_empresas WHERE id_empresa = ?";
-        try (PreparedStatement stmt = conexao.prepareStatement(sql)) {
-            stmt.setInt(1, idEmpresa);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    Empresa empresa = new Empresa();
-                    empresa.setIdEmpresa(rs.getInt("id_empresa"));
-                    empresa.setRazaoSocialEmpresa(rs.getString("razao_social_empresa"));
-                    empresa.setCnpjEmpresa(rs.getString("cnpj_empresa"));
-                    empresa.setSenhaEmpresa(rs.getString("senha_empresa"));
-                    empresa.setImagemEmpresa(rs.getString("imagem_empresa"));
-                    empresa.setDescricaoEmpresa(rs.getString("descricao_empresa"));
-                    return empresa;
-                }
-            }
+    // Select ID
+    public Empresa selecionarPorId(int idEmpresa) throws SQLException {
+        Empresa empresa = null;
+        PreparedStatement stmt = minhaConexao.prepareStatement(
+                "SELECT id_empresa, razao_social_empresa, cnpj_empresa, senha_empresa, imagem_empresa, descricao_empresa FROM tb_empresas WHERE id_empresa = ?");
+        stmt.setInt(1, idEmpresa);
+
+        ResultSet rs = stmt.executeQuery();
+        if (rs.next()) {
+            empresa = new Empresa();
+            empresa.setIdEmpresa(rs.getInt("id_empresa"));
+            empresa.setRazaoSocialEmpresa(rs.getString("razao_social_empresa"));
+            empresa.setCnpjEmpresa(rs.getString("cnpj_empresa"));
+            empresa.setSenhaEmpresa(rs.getString("senha_empresa"));
+            empresa.setImagemEmpresa(rs.getString("imagem_empresa"));
+            empresa.setDescricaoEmpresa(rs.getString("descricao_empresa"));
         }
-        return null; // Retorna null se não encontrar
+
+        stmt.close();
+        return empresa;
     }
-    // Método para buscar empresa pelo CNPJ
-    public Empresa buscarPorCnpj(String cnpj) throws SQLException {
-        String sql = "SELECT id_empresa, razao_social_empresa, cnpj_empresa, senha_empresa, imagem_empresa, descricao_empresa FROM tb_empresas WHERE cnpj_empresa = ?";
-        try (PreparedStatement stmt = conexao.prepareStatement(sql)) {
-            stmt.setString(1, cnpj);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    Empresa empresa = new Empresa();
-                    empresa.setIdEmpresa(rs.getInt("id_empresa"));
-                    empresa.setRazaoSocialEmpresa(rs.getString("razao_social_empresa"));
-                    empresa.setCnpjEmpresa(rs.getString("cnpj_empresa"));
-                    empresa.setSenhaEmpresa(rs.getString("senha_empresa"));
-                    empresa.setImagemEmpresa(rs.getString("imagem_empresa"));
-                    empresa.setDescricaoEmpresa(rs.getString("descricao_empresa"));
-                    return empresa;
-                }
-            }
+
+    // Select CNPJ
+    public Empresa selecionarPorCnpj(String cnpj) throws SQLException {
+        Empresa empresa = null;
+        PreparedStatement stmt = minhaConexao.prepareStatement(
+                "SELECT id_empresa, razao_social_empresa, cnpj_empresa, senha_empresa, imagem_empresa, descricao_empresa FROM tb_empresas WHERE cnpj_empresa = ?");
+        stmt.setString(1, cnpj);
+
+        ResultSet rs = stmt.executeQuery();
+        if (rs.next()) {
+            empresa = new Empresa();
+            empresa.setIdEmpresa(rs.getInt("id_empresa"));
+            empresa.setRazaoSocialEmpresa(rs.getString("razao_social_empresa"));
+            empresa.setCnpjEmpresa(rs.getString("cnpj_empresa"));
+            empresa.setSenhaEmpresa(rs.getString("senha_empresa"));
+            empresa.setImagemEmpresa(rs.getString("imagem_empresa"));
+            empresa.setDescricaoEmpresa(rs.getString("descricao_empresa"));
         }
-        return null; // Retorna null se a empresa não for encontrada
+
+        stmt.close();
+        return empresa;
     }
 }

@@ -1,5 +1,6 @@
 package br.com.solara.model.vo;
 
+// Classe associativa entre comunidades e projetos sustentáveis
 public class ComunidadeProjeto {
 
     private int idComunidade;

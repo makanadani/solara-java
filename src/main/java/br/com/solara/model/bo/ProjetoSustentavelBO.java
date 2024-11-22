@@ -2,79 +2,92 @@ package br.com.solara.model.bo;
 
 import br.com.solara.model.dao.ProjetoSustentavelDAO;
 import br.com.solara.model.vo.ProjetoSustentavel;
-import br.com.solara.exceptions.Exceptions.*;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
+// Classe de regras de negócio para projetos sustentáveis
 public class ProjetoSustentavelBO {
 
     private final ProjetoSustentavelDAO projetoSustentavelDAO;
 
-    public ProjetoSustentavelBO(Connection connection) {
-        this.projetoSustentavelDAO = new ProjetoSustentavelDAO(connection);
+    // Construtor
+    public ProjetoSustentavelBO() throws ClassNotFoundException, SQLException {
+        this.projetoSustentavelDAO = new ProjetoSustentavelDAO();
     }
 
-    public void inserirProjeto(ProjetoSustentavel projeto) throws ValidationException {
+    // Inserir
+    public String inserirBO(ProjetoSustentavel projeto) throws Exception {
+    	
+        // Regras de negócio:
+        // 1. Valida se os campos obrigatórios estão preenchidos.
         validarCamposObrigatorios(projeto);
-        try {
-            projetoSustentavelDAO.inserir(projeto);
-        } catch (SQLException e) {
-            throw new DatabaseException("Erro ao inserir projeto sustentável: " + e.getMessage(), e);
-        }
+
+        // 2. Insere o projeto no banco de dados.
+        return projetoSustentavelDAO.inserir(projeto);
     }
 
-    public ProjetoSustentavel buscarPorId(int idProjeto) throws NotFoundException {
-        try {
-            ProjetoSustentavel projeto = projetoSustentavelDAO.buscarPorId(idProjeto);
-            if (projeto == null) {
-                throw new NotFoundException("Projeto sustentável não encontrado para o ID: " + idProjeto);
-            }
-            return projeto;
-        } catch (SQLException e) {
-            throw new DatabaseException("Erro ao buscar projeto sustentável: " + e.getMessage(), e);
-        }
-    }
-
-    public List<ProjetoSustentavel> listarTodosProjetos() {
-        try {
-            return projetoSustentavelDAO.listarTodos();
-        } catch (SQLException e) {
-            throw new DatabaseException("Erro ao listar projetos sustentáveis: " + e.getMessage(), e);
-        }
-    }
-
-    public void atualizarProjeto(ProjetoSustentavel projeto) throws ValidationException {
+    // Atualizar
+    public String atualizarBO(ProjetoSustentavel projeto) throws Exception {
+    	
+        // Regras de negócio:
+        // 1. Valida se os campos obrigatórios estão preenchidos.
         validarCamposObrigatorios(projeto);
-        try {
-            projetoSustentavelDAO.atualizar(projeto);
-        } catch (SQLException e) {
-            throw new DatabaseException("Erro ao atualizar projeto sustentável: " + e.getMessage(), e);
-        }
+
+        // 2. Atualiza os dados do projeto no banco de dados.
+        return projetoSustentavelDAO.atualizar(projeto);
     }
 
-    public void deletarProjeto(int idProjeto) throws NotFoundException {
-        try {
-            ProjetoSustentavel projeto = buscarPorId(idProjeto);
-            if (projeto == null) {
-                throw new NotFoundException("Projeto sustentável não encontrado para exclusão.");
-            }
-            projetoSustentavelDAO.deletar(idProjeto);
-        } catch (SQLException e) {
-            throw new DatabaseException("Erro ao deletar projeto sustentável: " + e.getMessage(), e);
+    // Deletar
+    public String deletarBO(int idProjeto) throws SQLException {
+    	
+        // Regras de negócio:
+        // 1. Verifica se o projeto existe antes de excluí-lo.
+        ProjetoSustentavel projeto = buscarPorId(idProjeto);
+        if (projeto == null) {
+            throw new SQLException("Projeto sustentável não encontrado para exclusão.");
         }
+
+        // 2. Realiza a exclusão do projeto no banco de dados.
+        return projetoSustentavelDAO.deletar(idProjeto);
     }
 
-    private void validarCamposObrigatorios(ProjetoSustentavel projeto) throws ValidationException {
+    // Selecionar Todos
+    public List<ProjetoSustentavel> listarTodosProjetos() throws SQLException {
+        // Retorna todos os projetos sustentáveis cadastrados no banco.
+        return projetoSustentavelDAO.selecionarTodos();
+    }
+
+    // Selecionar por ID
+    public ProjetoSustentavel buscarPorId(int idProjeto) throws SQLException {
+        ProjetoSustentavel projeto = projetoSustentavelDAO.selecionar(idProjeto);
+
+        // Regras de negócio:
+        // 1. Verifica se o projeto foi encontrado.
+        if (projeto == null) {
+            throw new SQLException("Projeto sustentável não encontrado para o ID: " + idProjeto);
+        }
+
+        return projeto;
+    }
+
+    // Validação de campos obrigatórios
+    private void validarCamposObrigatorios(ProjetoSustentavel projeto) throws Exception {
+    	
+        // Regras de negócio:
+        // 1. A descrição do projeto é obrigatória.
         if (projeto.getDescricaoProjeto() == null || projeto.getDescricaoProjeto().trim().isEmpty()) {
-            throw new ValidationException("A descrição do projeto é obrigatória.");
+            throw new Exception("A descrição do projeto é obrigatória.");
         }
+
+        // 2. O custo do projeto deve ser maior que zero.
         if (projeto.getCustoProjeto() == null || projeto.getCustoProjeto() <= 0) {
-            throw new ValidationException("O custo do projeto deve ser maior que zero.");
+            throw new Exception("O custo do projeto deve ser maior que zero.");
         }
+
+        // 3. O status do projeto é obrigatório.
         if (projeto.getStatusProjeto() == null || projeto.getStatusProjeto().trim().isEmpty()) {
-            throw new ValidationException("O status do projeto é obrigatório.");
+            throw new Exception("O status do projeto é obrigatório.");
         }
     }
 }

@@ -1,85 +1,97 @@
 package br.com.solara.model.dao;
 
-import br.com.solara.model.vo.TipoFonte;
-
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import br.com.solara.model.vo.TipoFonte;
+import br.com.solara.connection.ConnectionFactory;
+
+// Classe para métodos CRUD dos tipos de fontes de energia
 public class TipoFonteDAO {
+    
+    public Connection minhaConexao;
 
-    private final Connection connection;
-
-    // Construtor
-    public TipoFonteDAO(Connection connection) {
-        this.connection = connection;
+    public TipoFonteDAO() throws ClassNotFoundException, SQLException {
+        super();
+        this.minhaConexao = new ConnectionFactory().conexao();
     }
 
-    // Create (Inserir um novo tipo de fonte)
-    public void inserir(TipoFonte tipoFonte) throws SQLException {
-        String sql = "INSERT INTO tb_tipo_fontes (nome_fonte) VALUES (?)";
-        try (PreparedStatement stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            stmt.setString(1, tipoFonte.getNomeFonte());
-            stmt.executeUpdate();
-
-            // Recupera a chave gerada
-            try (ResultSet rs = stmt.getGeneratedKeys()) {
-                if (rs.next()) {
-                    tipoFonte.setIdTipoFonte(rs.getInt(1));
-                }
-            }
+    // Insert
+    public String inserir(TipoFonte tipoFonte) throws SQLException {
+        PreparedStatement stmt = minhaConexao.prepareStatement
+                ("INSERT INTO tb_tipo_fontes (nome_fonte) VALUES (?)", PreparedStatement.RETURN_GENERATED_KEYS);
+        stmt.setString(1, tipoFonte.getNomeFonte());
+        stmt.executeUpdate();
+        
+        ResultSet rs = stmt.getGeneratedKeys();
+        if (rs.next()) {
+            tipoFonte.setIdTipoFonte(rs.getInt(1));
         }
+        
+        stmt.close();
+        return "Cadastrado com Sucesso!";
     }
 
-    // Read (Buscar um tipo de fonte pelo ID)
-    public TipoFonte buscarPorId(int idTipoFonte) throws SQLException {
-        String sql = "SELECT id_tipo_fonte, nome_fonte FROM tb_tipo_fontes WHERE id_tipo_fonte = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, idTipoFonte);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return new TipoFonte(
-                        rs.getInt("id_tipo_fonte"),
-                        rs.getString("nome_fonte")
-                    );
-                }
-            }
-        }
-        return null; // Retorna null se o tipo de fonte não for encontrado
+    // Delete
+    public String deletar(int idTipoFonte) throws SQLException {
+        PreparedStatement stmt = minhaConexao.prepareStatement
+                ("DELETE FROM tb_tipo_fontes WHERE id_tipo_fonte = ?");
+        stmt.setInt(1, idTipoFonte);
+        stmt.execute();
+        stmt.close();
+        return "Deletado com Sucesso!";
     }
 
-    // Read (Listar todos os tipos de fonte)
-    public List<TipoFonte> listarTodos() throws SQLException {
-        List<TipoFonte> tiposFonte = new ArrayList<>();
-        String sql = "SELECT id_tipo_fonte, nome_fonte FROM tb_tipo_fontes";
-        try (PreparedStatement stmt = connection.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
-            while (rs.next()) {
-                tiposFonte.add(new TipoFonte(
-                    rs.getInt("id_tipo_fonte"),
-                    rs.getString("nome_fonte")
-                ));
-            }
-        }
-        return tiposFonte;
+    // Update
+    public String atualizar(TipoFonte tipoFonte) throws SQLException {
+        PreparedStatement stmt = minhaConexao.prepareStatement
+                ("UPDATE tb_tipo_fontes SET nome_fonte = ? WHERE id_tipo_fonte = ?");
+        stmt.setString(1, tipoFonte.getNomeFonte());
+        stmt.setInt(2, tipoFonte.getIdTipoFonte());
+        stmt.executeUpdate();
+        stmt.close();
+        return "Atualizado com Sucesso!";
     }
 
-    // Update (Atualizar um tipo de fonte)
-    public void atualizar(TipoFonte tipoFonte) throws SQLException {
-        String sql = "UPDATE tb_tipo_fontes SET nome_fonte = ? WHERE id_tipo_fonte = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, tipoFonte.getNomeFonte());
-            stmt.setInt(2, tipoFonte.getIdTipoFonte());
-            stmt.executeUpdate();
+    // Select All
+    public List<TipoFonte> selecionarTodos() throws SQLException {
+        List<TipoFonte> listaTipoFonte = new ArrayList<>();
+        PreparedStatement stmt = minhaConexao.prepareStatement
+                ("SELECT id_tipo_fonte, nome_fonte FROM tb_tipo_fontes");
+        
+        ResultSet rs = stmt.executeQuery();
+        
+        while (rs.next()) {
+            TipoFonte tipoFonte = new TipoFonte();
+            tipoFonte.setIdTipoFonte(rs.getInt("id_tipo_fonte"));
+            tipoFonte.setNomeFonte(rs.getString("nome_fonte"));
+            listaTipoFonte.add(tipoFonte);
         }
+        
+        stmt.close();
+        return listaTipoFonte;
     }
 
-    // Delete (Remover um tipo de fonte pelo ID)
-    public void deletar(int idTipoFonte) throws SQLException {
-        String sql = "DELETE FROM tb_tipo_fontes WHERE id_tipo_fonte = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, idTipoFonte);
-            stmt.executeUpdate();
+    // Select
+    public TipoFonte selecionar(int idTipoFonte) throws SQLException {
+        TipoFonte tipoFonte = null;
+        PreparedStatement stmt = minhaConexao.prepareStatement
+                ("SELECT id_tipo_fonte, nome_fonte FROM tb_tipo_fontes WHERE id_tipo_fonte = ?");
+        stmt.setInt(1, idTipoFonte);
+        
+        ResultSet rs = stmt.executeQuery();
+        
+        if (rs.next()) {
+            tipoFonte = new TipoFonte();
+            tipoFonte.setIdTipoFonte(rs.getInt("id_tipo_fonte"));
+            tipoFonte.setNomeFonte(rs.getString("nome_fonte"));
         }
+        
+        stmt.close();
+        return tipoFonte;
     }
 }

@@ -3,65 +3,74 @@ package br.com.solara.model.bo;
 import br.com.solara.model.dao.ComunidadeProjetoDAO;
 import br.com.solara.model.vo.ComunidadeProjeto;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
+// Classe de regras de negócio para associações entre comunidades e projetos
 public class ComunidadeProjetoBO {
 
     private final ComunidadeProjetoDAO comunidadeProjetoDAO;
 
-    // Construtor
-    public ComunidadeProjetoBO(Connection connection) {
-        this.comunidadeProjetoDAO = new ComunidadeProjetoDAO(connection);
+    public ComunidadeProjetoBO() throws ClassNotFoundException, SQLException {
+        this.comunidadeProjetoDAO = new ComunidadeProjetoDAO();
     }
 
-    // Método para associar uma comunidade a um projeto
-    public void associarComunidadeProjeto(ComunidadeProjeto comunidadeProjeto) throws Exception {
+    // Associar uma comunidade a um projeto
+    public String associarComunidadeProjeto(ComunidadeProjeto comunidadeProjeto, String descricaoProjeto) throws Exception {
+    	
+        // Regras de negócio:
+        // 1. Valida os campos obrigatórios.
         validarCamposObrigatorios(comunidadeProjeto);
 
-        // Verifica se a relação já existe
-        if (isRelacaoDuplicada(comunidadeProjeto.getIdComunidade(), comunidadeProjeto.getIdProjeto())) {
-            throw new Exception("A comunidade já está associada a este projeto.");
+        // 2. Verifica se já existe uma associação duplicada com base na descrição do projeto.
+        if (isRelacaoDuplicada(comunidadeProjeto.getIdComunidade(), descricaoProjeto)) {
+            throw new Exception("A comunidade já está associada a um projeto com esta descrição.");
         }
 
-        // Insere no banco
+        // 3. Insere a relação no banco de dados.
         comunidadeProjetoDAO.inserir(comunidadeProjeto);
+        return "Comunidade associada ao projeto com sucesso!";
     }
 
-    // Método para listar todas as relações entre comunidades e projetos
-    public List<ComunidadeProjeto> listarTodasRelacoes() throws SQLException {
-        return comunidadeProjetoDAO.listarTodas();
+    // Listar todas as associações entre comunidades e projetos
+    public List<ComunidadeProjeto> selecionarTodosBO() throws SQLException {
+        return comunidadeProjetoDAO.selecionarTodos();
     }
 
-    // Método para buscar relações por ID da comunidade
-    public List<ComunidadeProjeto> buscarPorIdComunidade(int idComunidade) throws SQLException {
-        return comunidadeProjetoDAO.buscarPorIdComunidade(idComunidade);
+    // Buscar associações por ID da comunidade
+    public List<ComunidadeProjeto> selecionarPorIdComunidadeBO(int idComunidade) throws SQLException {
+        return comunidadeProjetoDAO.selecionarTodos();
     }
 
-    // Método para buscar relações por ID do projeto
-    public List<ComunidadeProjeto> buscarPorIdProjeto(int idProjeto) throws SQLException {
-        return comunidadeProjetoDAO.buscarPorIdProjeto(idProjeto);
+    // Buscar associações por ID do projeto
+    public List<ComunidadeProjeto> selecionarPorIdProjetoBO(int idProjeto) throws SQLException {
+        return comunidadeProjetoDAO.selecionarPorIdProjeto(idProjeto);
     }
 
-    // Método para remover uma relação específica entre comunidade e projeto
-    public void removerRelacao(int idComunidade, int idProjeto) throws SQLException {
-        // Verifica se a relação existe antes de tentar deletar
+    // Remover uma relação específica entre comunidade e projeto
+    public String removerRelacao(int idComunidade, int idProjeto) throws SQLException {
+    	
+        // Regras de negócio:
+        // 1. Verifica se a relação existe.
         if (!isRelacaoExistente(idComunidade, idProjeto)) {
             throw new SQLException("Relação entre comunidade e projeto não encontrada.");
         }
 
+        // 2. Realiza a exclusão da relação no banco de dados.
         comunidadeProjetoDAO.deletar(idComunidade, idProjeto);
+        return "Relação entre comunidade e projeto removida com sucesso!";
     }
 
-    // Método para remover todas as relações de uma comunidade
-    public void removerRelacoesPorIdComunidade(int idComunidade) throws SQLException {
+    // Remover todas as relações de uma comunidade
+    public String deletarPorIdComunidadeBO(int idComunidade) throws SQLException {
         comunidadeProjetoDAO.deletarPorIdComunidade(idComunidade);
+        return "Todas as relações da comunidade foram removidas com sucesso!";
     }
 
-    // Método para remover todas as relações de um projeto
-    public void removerRelacoesPorIdProjeto(int idProjeto) throws SQLException {
+    // Remover todas as relações de um projeto
+    public String deletarPorIdProjetoBO(int idProjeto) throws SQLException {
         comunidadeProjetoDAO.deletarPorIdProjeto(idProjeto);
+        return "Todas as relações do projeto foram removidas com sucesso!";
     }
 
     // Valida os campos obrigatórios
@@ -74,15 +83,15 @@ public class ComunidadeProjetoBO {
         }
     }
 
-    // Verifica se uma relação entre comunidade e projeto já existe
-    private boolean isRelacaoDuplicada(int idComunidade, int idProjeto) throws SQLException {
-        List<ComunidadeProjeto> relacoes = comunidadeProjetoDAO.buscarPorIdComunidade(idComunidade);
-        return relacoes.stream().anyMatch(relacao -> relacao.getIdProjeto() == idProjeto);
+    // Verifica se uma relação entre comunidade e descrição do projeto já existe
+    private boolean isRelacaoDuplicada(int idComunidade, String descricaoProjeto) throws SQLException {
+        List<String> descricoesProjetos = comunidadeProjetoDAO.selecionarPorIdComunidade(idComunidade);
+        return descricoesProjetos.stream().anyMatch(descricao -> descricao.equalsIgnoreCase(descricaoProjeto));
     }
 
-    // Verifica se uma relação entre comunidade e projeto existe
+    // Verifica se uma relação entre comunidade e id do projeto existe
     private boolean isRelacaoExistente(int idComunidade, int idProjeto) throws SQLException {
-        List<ComunidadeProjeto> relacoes = comunidadeProjetoDAO.buscarPorIdComunidade(idComunidade);
-        return relacoes.stream().anyMatch(relacao -> relacao.getIdProjeto() == idProjeto);
+        List<ComunidadeProjeto> relacoes = comunidadeProjetoDAO.selecionarPorIdProjeto(idProjeto);
+        return relacoes.stream().anyMatch(relacao -> relacao.getIdComunidade() == idComunidade);
     }
 }

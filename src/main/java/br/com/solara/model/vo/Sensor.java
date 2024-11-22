@@ -1,21 +1,20 @@
 package br.com.solara.model.vo;
 
+// Classe referente aos sensores IoT de produção, armazenamento e consumo de energia
 public class Sensor {
     private int idSensor;
     private int idComunidade;
     private int idTipoFonte;
     private String tipoSensor;
-    private String descricaoSensor;
 
     public Sensor() {
     }
 
-    public Sensor(int idSensor, int idComunidade, int idTipoFonte, String tipoSensor, String descricaoSensor) {
+    public Sensor(int idSensor, int idComunidade, int idTipoFonte, String tipoSensor) {
         this.idSensor = idSensor;
         this.idComunidade = idComunidade;
         this.idTipoFonte = idTipoFonte;
         this.tipoSensor = tipoSensor;
-        this.descricaoSensor = descricaoSensor;
     }
 
     public int getIdSensor() {
@@ -50,22 +49,13 @@ public class Sensor {
 		this.tipoSensor = tipoSensor;
 	}
 
-	public String getDescricaoSensor() {
-        return descricaoSensor;
-    }
-
-    public void setDescricaoSensor(String descricaoSensor) {
-        this.descricaoSensor = descricaoSensor;
-    }
-
     @Override
     public String toString() {
         return "Sensor{" +
                 "idSensor=" + idSensor +
                 ", idComunidade=" + idComunidade +
                 ", idTipoFonte=" + idTipoFonte +
-                ", tipoSensor='" + tipoSensor + '\'' +
-                ", descricaoSensor='" + descricaoSensor + '\'' +
+                ", tipoSensor='" + tipoSensor +
                 '}';
     }
 }
