@@ -46,10 +46,8 @@ public class LoginResource {
                     .build();
         }
 
-        // Gerar token simples (Base64 com ID e chave secreta)
+        // Token para senha
         String token = gerarToken(empresa);
-
-        // Responder com o token e dados da empresa
         Map<String, String> response = new HashMap<>();
         response.put("message", "Login realizado com sucesso!");
         response.put("token", token);

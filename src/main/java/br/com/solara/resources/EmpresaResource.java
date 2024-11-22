@@ -17,10 +17,10 @@ public class EmpresaResource {
         this.empresaBO = new EmpresaBO();
     }
 
-    // Inserir empresa
+    // Inserir
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response criarEmpresa(Empresa empresa) {
+    public Response criarRs(Empresa empresa) {
         try {
             empresaBO.inserirBO(empresa);
             return Response.status(Response.Status.CREATED).entity("Empresa criada com sucesso!").build();
@@ -29,11 +29,11 @@ public class EmpresaResource {
         }
     }
 
-    // Atualizar empresa
+    // Atualizar
     @PUT
     @Path("/{id}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response atualizarEmpresa(@PathParam("id") int id, Empresa empresa) {
+    public Response atualizarRs(@PathParam("id") int id, Empresa empresa) {
         try {
             empresa.setIdEmpresa(id);
             empresaBO.atualizarBO(empresa);
@@ -43,10 +43,10 @@ public class EmpresaResource {
         }
     }
 
-    // Deletar empresa
+    // Deletar
     @DELETE
     @Path("/{id}")
-    public Response deletarEmpresa(@PathParam("id") int id) {
+    public Response deletarEmpresaRs(@PathParam("id") int id) {
         try {
             empresaBO.deletarBO(id);
             return Response.ok("Empresa deletada com sucesso!").build();
@@ -55,10 +55,10 @@ public class EmpresaResource {
         }
     }
 
-    // Consultar todas as empresas
+    // Selecionar Todos
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response listarEmpresas() {
+    public Response selecionarTodosRs() {
         try {
             List<Empresa> empresas = empresaBO.selecionarTodosBO();
             return Response.ok(empresas).build();
@@ -67,11 +67,11 @@ public class EmpresaResource {
         }
     }
 
-    // Consultar empresa por ID
+    // Selecionar por ID
     @GET
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response buscarEmpresaPorId(@PathParam("id") int id) {
+    public Response selecionarRs(@PathParam("id") int id) {
         try {
             Empresa empresa = empresaBO.selecionarPorIdBO(id);
             return Response.ok(empresa).build();
