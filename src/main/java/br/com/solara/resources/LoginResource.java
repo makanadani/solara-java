@@ -1,5 +1,8 @@
 package br.com.solara.resources;
 
+import br.com.solara.model.dao.EmpresaDAO;
+import br.com.solara.model.vo.Empresa;
+
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import java.nio.charset.StandardCharsets;
@@ -9,11 +12,10 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
-import br.com.solara.model.dao.EmpresaDAO;
-import br.com.solara.model.vo.Empresa;
-
 @Path("/login")
 public class LoginResource {
+
+    private static final String SECRET_KEY = "SuaChaveSecreta";
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
@@ -22,51 +24,46 @@ public class LoginResource {
         String cnpj = credentials.get("cnpjEmpresa");
         String senha = credentials.get("senhaEmpresa");
 
-        // Validação inicial de CNPJ e Senha
         if (cnpj == null || senha == null || cnpj.isEmpty() || senha.isEmpty()) {
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity(Map.of("error", "CNPJ e senha são obrigatórios."))
                     .build();
         }
 
-        // Buscar empresa pelo CNPJ
         EmpresaDAO empresaDAO = new EmpresaDAO();
         Empresa empresa = empresaDAO.selecionarPorCnpj(cnpj);
 
-        // Verificar se a empresa existe
         if (empresa == null) {
             return Response.status(Response.Status.UNAUTHORIZED)
                     .entity(Map.of("error", "CNPJ não encontrado."))
                     .build();
         }
 
-        // Exceção para testes
-        if (empresa.getRazaoSocialEmpresa().equalsIgnoreCase("EcoMinds Ltda.")) {
-            if (!senha.equals("ecominds123")) {
-                return Response.status(Response.Status.UNAUTHORIZED)
-                        .entity(Map.of("error", "Senha inválida."))
-                        .build();
-            }
-        } else {
-            // Verificação de senha criptografada para outras empresas
-            String senhaHash = gerarHashSHA256(senha);
-            if (!empresa.getSenhaEmpresa().equals(senhaHash)) {
-                return Response.status(Response.Status.UNAUTHORIZED)
-                        .entity(Map.of("error", "Senha inválida."))
-                        .build();
-            }
+        String senhaHash = gerarHashSHA256(senha);
+        if (!empresa.getSenhaEmpresa().equals(senhaHash)) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                    .entity(Map.of("error", "Senha inválida."))
+                    .build();
         }
 
-        // Login bem-sucedido
+        // Gerar token simples (Base64 com ID e chave secreta)
+        String token = gerarToken(empresa);
+
+        // Responder com o token e dados da empresa
         Map<String, String> response = new HashMap<>();
         response.put("message", "Login realizado com sucesso!");
+        response.put("token", token);
         response.put("idEmpresa", String.valueOf(empresa.getIdEmpresa()));
         response.put("razaoSocial", empresa.getRazaoSocialEmpresa());
 
         return Response.ok(response).build();
     }
 
-    // Método para gerar hash SHA-256
+    private String gerarToken(Empresa empresa) {
+        String data = empresa.getIdEmpresa() + ":" + SECRET_KEY;
+        return Base64.getEncoder().encodeToString(data.getBytes(StandardCharsets.UTF_8));
+    }
+
     private String gerarHashSHA256(String senha) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");

@@ -1,13 +1,12 @@
 package br.com.solara.resources;
 
-import java.sql.SQLException;
-import java.util.List;
+import br.com.solara.model.bo.EmpresaBO;
+import br.com.solara.model.vo.Empresa;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
-
-import br.com.solara.model.bo.EmpresaBO;
-import br.com.solara.model.vo.Empresa;
+import java.sql.SQLException;
+import java.util.List;
 
 @Path("/empresas")
 public class EmpresaResource {
@@ -18,76 +17,66 @@ public class EmpresaResource {
         this.empresaBO = new EmpresaBO();
     }
 
-    // Inserir (POST)
+    // Inserir empresa
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response criarEmpresa(Empresa empresa, @Context UriInfo uriInfo) {
+    public Response criarEmpresa(Empresa empresa) {
         try {
             empresaBO.inserirBO(empresa);
-            UriBuilder builder = uriInfo.getAbsolutePathBuilder();
-            builder.path(Integer.toString(empresa.getIdEmpresa()));
-            return Response.created(builder.build()).build();
+            return Response.status(Response.Status.CREATED).entity("Empresa criada com sucesso!").build();
         } catch (Exception e) {
-            return Response.status(Response.Status.BAD_REQUEST).entity("Erro ao cadastrar a empresa: " + e.getMessage()).build();
+            return Response.status(Response.Status.BAD_REQUEST).entity("Erro ao criar empresa: " + e.getMessage()).build();
         }
     }
 
-    // Atualizar (PUT)
+    // Atualizar empresa
     @PUT
     @Path("/{id}")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response atualizarEmpresa(@PathParam("id") int id, Empresa empresa) {
         try {
             empresa.setIdEmpresa(id);
-            empresaBO.atualizarBO(empresa);  // Atualizar empresa no banco de dados
-            return Response.ok().build();
+            empresaBO.atualizarBO(empresa);
+            return Response.ok("Empresa atualizada com sucesso!").build();
         } catch (Exception e) {
-            return Response.status(Response.Status.BAD_REQUEST).entity("Erro ao atualizar a empresa: " + e.getMessage()).build();
+            return Response.status(Response.Status.BAD_REQUEST).entity("Erro ao atualizar empresa: " + e.getMessage()).build();
         }
     }
 
-    // Deletar (DELETE)
+    // Deletar empresa
     @DELETE
     @Path("/{id}")
     public Response deletarEmpresa(@PathParam("id") int id) {
         try {
-            // Verificar se a empresa existe antes de deletar
-            Empresa empresa = empresaBO.selecionarPorIdBO(id);
-            if (empresa == null) {
-                return Response.status(Response.Status.NOT_FOUND).entity("Empresa não encontrada.").build();
-            }
-            empresaBO.deletarBO(id);  // Deletar a empresa no banco de dados
-            return Response.ok().build();
+            empresaBO.deletarBO(id);
+            return Response.ok("Empresa deletada com sucesso!").build();
         } catch (Exception e) {
-            return Response.status(Response.Status.BAD_REQUEST).entity("Erro ao deletar a empresa: " + e.getMessage()).build();
+            return Response.status(Response.Status.BAD_REQUEST).entity("Erro ao deletar empresa: " + e.getMessage()).build();
         }
     }
 
-    // Consultar todas as empresas (GET)
+    // Consultar todas as empresas
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response listarEmpresas() {
         try {
-            List<Empresa> empresas = empresaBO.selecionarTodosBO();  // Selecionar todas as empresas
+            List<Empresa> empresas = empresaBO.selecionarTodosBO();
             return Response.ok(empresas).build();
         } catch (SQLException e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Erro ao listar empresas: " + e.getMessage()).build();
         }
     }
 
-    // Consultar por ID (GET)
+    // Consultar empresa por ID
     @GET
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response buscarEmpresaPorId(@PathParam("id") int id) {
         try {
-            Empresa empresa = empresaBO.selecionarPorIdBO(id);  // Buscar empresa pelo ID
-            if (empresa == null) {
-                return Response.status(Response.Status.NOT_FOUND).entity("Empresa não encontrada.").build();
-            }
+            Empresa empresa = empresaBO.selecionarPorIdBO(id);
             return Response.ok(empresa).build();
         } catch (SQLException e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Erro ao buscar empresa: " + e.getMessage()).build();
+            return Response.status(Response.Status.NOT_FOUND).entity("Empresa não encontrada.").build();
         }
     }
 }
